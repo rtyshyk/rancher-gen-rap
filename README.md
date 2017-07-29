@@ -552,6 +552,10 @@ foo: {{replace $foo "-" "_" -1}}
 
 See Go's [strings.Replace()](http://golang.org/pkg/strings/#Replace) for more information.
 
+### `sha1`
+
+Returns the hexadecimal representation of the SHA1 hash of string
+
 
 Examples
 --------

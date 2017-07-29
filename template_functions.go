@@ -10,6 +10,8 @@ import (
 	"time"
 	"reflect"
 	"io/ioutil"
+	"io"
+	"crypto/sha1"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -138,6 +140,7 @@ func newFuncMap(ctx *TemplateContext) template.FuncMap {
 		"toLower":   strings.ToLower,
 		"contains":  strings.Contains,
 		"replace":   strings.Replace,
+		"sha1":      hashSha1,
 
 		// Service funcs
 		"host":              hostFunc(ctx),
@@ -148,7 +151,7 @@ func newFuncMap(ctx *TemplateContext) template.FuncMap {
 		"whereLabelEquals":  whereLabelEquals,
 		"whereLabelMatches": whereLabelEquals,
 		"groupByLabel":      groupByLabel,
-		
+
 		//Add for Rancher-Active-Proxy (from jwilder/docker-gen)
 		"exists":           	exists,
 		"groupByMulti":      	groupByMulti,
@@ -253,10 +256,10 @@ func groupByLabel(label string, in interface{}) (map[string][]interface{}, error
 	return m, nil
 }
 
-//RAP: getAllLabelValue => get all the value for a given label 
+//RAP: getAllLabelValue => get all the value for a given label
 func getAllLabelValue(filter string,label string, sep string, in interface{}) ([]string, error) {
     m := make([]string,0)
-    
+
 	if in == nil {
 		return m, fmt.Errorf("(getAllLabelValue) input is nil")
 	}
@@ -281,7 +284,7 @@ func getAllLabelValue(filter string,label string, sep string, in interface{}) ([
 				    }
 		    	}
 			}
-			
+
 		}
 	case []Container:
 		for _, c := range typed {
@@ -524,4 +527,10 @@ func whereLabelMatches(label, pattern string, in interface{}) ([]interface{}, er
 	return whereLabel("whereLabelMatches", in, label, func(value string, ok bool) bool {
 		return ok && rx.MatchString(value)
 	})
+}
+
+func hashSha1(input string) string {
+	h := sha1.New()
+	io.WriteString(h, input)
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
